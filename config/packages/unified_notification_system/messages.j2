@@ -1,0 +1,48 @@
+>-
+  {% set message_id = message_id | lower %}
+  {% set current_time = now().strftime('%H:%M:%S') %}
+
+  {%- macro door_open() -%}
+    {% set titles = [
+      "ATTENZIONE: Porta principale aperta",
+      "AVVISO: Porta d'ingresso aperta",
+      "ALLERTA: Apertura porta ingresso",
+      "ATTENZIONE: Porta di casa aperta"
+      ] %}
+    {% set bodies = [
+      "La porta d'ingresso è stata aperta ", 
+      "La porta principale è stata aperta", 
+      "La porta di casa è stata aperta"
+      ] %}
+    {% set random_title = titles | random %}
+    {% set random_body = bodies | random %}
+    {% set random_body_with_time = random_body ~ " alle " ~ current_time %}
+    {{ [random_title, random_body_with_time] | tojson }}
+  {%- endmacro -%}
+
+
+  {%- macro water_leak() -%}
+    {% set titles = [
+      "ATTENZIONE: Perdita d'acqua",
+      "CRITICAL: Perdita d'acqua",
+      "ALLERTA: Perdita d'acqua"
+      ] %}
+    {% set bodies = [
+      "Il rubinetto in cucina perde acqua",
+      "C'e' una perdita di acqua in cucina"
+      ] %}
+    {% set random_title = titles | random %}
+    {% set random_body = bodies | random %}
+    {% set random_body_with_time = random_body ~ " alle " ~ current_time %}
+    {{ [random_title, random_body_with_time] | tojson }}
+  {%- endmacro -%}
+
+
+  {% set message_id = message_id | lower %}
+  {% set macros = {
+    "call_door_open": door_open,
+    "call_water_leak": water_leak
+  } %}
+
+  {% set generated_message = macros[message_id]() if message_id in macros else "" %}
+  {{ generated_message }}

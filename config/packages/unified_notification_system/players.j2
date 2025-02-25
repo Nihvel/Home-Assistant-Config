@@ -1,0 +1,24 @@
+>-
+  {% if player is defined and player | length > 0 %}
+    {% set player = player | lower %}
+
+    {% if player == 'office' %}
+      {% set player = 'media_player.office' %}
+    {% elif player == 'living_room' %}
+      {% set player = 'media_player.living_room' %}
+    {% elif player == 'all' %}
+      {% set player = 'media_player.living_room, media_player.office' %}
+    {% endif %}
+
+  {% elif
+      is_state("binary_sensor.zone03_occupancy01_occupancy", "on") or 
+      is_state("binary_sensor.office_pc", "on") or
+      is_state("binary_sensor.everything_presence_lite_4f051c_occupancy", "on") 
+  %}
+    {% set player = 'media_player.office' %}
+  
+  {% else %}
+    {% set player = 'media_player.living_room' %}
+  {% endif %}
+
+  {{ player }}

@@ -1,0 +1,20 @@
+>-
+  {% if forced is defined %}
+    {% set volume = 95 %}
+  {% elif volume is not defined %}
+    {% if 9 <= now().hour <= 11 %}
+      {% set volume = 60 %}
+    {% elif 12 <= now().hour <= 18 %}
+      {% set volume = 80 %}
+    {% elif 19 <= now().hour <= 20 %}
+      {% set volume = 70 %}
+    {% elif 21 <= now().hour <= 22 %}
+      {% set volume = 50 %}
+    {% else %}
+      {% set volume = 20 %}
+    {% endif %}
+  {% else %}
+    {% set volume = volume %}
+  {% endif %}
+
+  {{ volume / 100 | float }}

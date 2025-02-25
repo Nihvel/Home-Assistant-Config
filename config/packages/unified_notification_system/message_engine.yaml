@@ -1,0 +1,27 @@
+---
+# - action: script.uns
+#   data:
+#     kind: text
+#     message_id: call_presence_scanning
+#     device: juri
+
+script:
+  message_engine:
+    mode: queued
+    sequence:
+      - action: script.message_processing
+        data:
+          title: >
+            {% if message is not string and message is iterable and message | length > 1 %}
+              {{ message[0] }}
+            {% else %}
+              "Message received at {{ now().strftime('%H:%M:%S') }}"
+            {% endif %}
+          message: >
+            {% if message is not string and message is iterable and message | length > 1 %}
+              {{ message[1] }}
+            {% else %}
+              {{ message }}
+            {% endif %}
+          device: "{{ device }}"
+...

@@ -1,0 +1,140 @@
+---
+input_number:
+  media_player_volume:
+    name: "Media Player Volume"
+    min: 0
+    max: 1
+    step: 0.01
+
+input_datetime:
+  last_chime_played:
+    name: Time last chime played
+    has_date: true
+    has_time: true
+
+input_boolean:
+  speech_engine:
+    name: Speech Engine
+    icon: mdi:account-voice
+
+  speech_media_playing:
+    name: Media Playing
+
+script:
+  speech_engine:
+    mode: queued
+    sequence:
+    - variables:
+        chime_volume: 35
+        chime_tone: bttf.mp3
+
+    - condition: and
+      conditions:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: input_boolean.speech_engine
+          state: 'on'
+        - condition: template
+          value_template: "{{ forced }}"
+      - condition: or
+        conditions:
+        - condition: time
+          after: "08:00:00"
+          before: "23:00:00"
+        - condition: template
+          value_template: "{{ forced }}"
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: group.family
+          state: 'home'
+        - condition: state
+          entity_id: input_boolean.guest_mode
+          state: 'on'
+
+    - if:
+        - condition: template
+          value_template: "{{ is_state(player, 'playing') }}"
+      then:
+        - action: input_boolean.turn_on
+          entity_id: input_boolean.speech_media_playing
+          
+        - action: media_player.media_pause
+          target:
+            entity_id: "{{ player }}"
+
+        - action: input_number.set_value
+          target:
+            entity_id: input_number.media_player_volume
+          data:
+            value: "{{ state_attr(player, 'volume_level') }}"
+
+      else:
+        - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ not forced }}"
+              - condition: template
+                value_template: >
+                  {{ (as_timestamp(now()) - (state_attr('input_datetime.last_chime_played', 'timestamp') | default(0))) > 60 }}
+            sequence:
+              - action: media_player.volume_set
+                target:
+                  entity_id: "{{ player }}"
+                data:
+                  volume_level: "{{ chime_volume / 100 }}"
+
+              - action: media_player.play_media
+                data:
+                  media_content_id: "media-source://media_source/local/{{ chime_tone }}"
+                  media_content_type: audio/mpeg
+                  announce: false
+                target:
+                  entity_id: "{{ player }}"
+
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.last_chime_played
+                data:
+                  timestamp: "{{ as_timestamp(now()) }}"
+
+              - delay:
+                  seconds: 3
+
+    - action: media_player.volume_set
+      target:
+        entity_id: "{{ player }}"
+      data:
+        volume_level: "{{ volume }}"
+
+    - action: script.speech_processing
+      data:
+        player:   "{{ player }}"
+        message:  "{{ message }}"
+        engine:   "{{ engine }}"
+
+    - delay:
+        milliseconds: >
+          {% set charsBySec = 14 %}
+          {% set char_count = message | length %}
+            {{ (char_count * 1000 // charsBySec) + 1000 }}
+
+    - if:
+        - condition: state
+          entity_id: input_boolean.speech_media_playing
+          state: 'on'
+      then:
+        - action: input_boolean.turn_off
+          entity_id: input_boolean.speech_media_playing
+          
+        - action: media_player.volume_set
+          target:
+            entity_id: "{{ player }}"
+          data:
+            volume_level: "{{ states('input_number.media_player_volume') }}"
+        
+        - action: media_player.media_play
+          target:
+            entity_id: "{{ player }}"
+...

@@ -1,0 +1,140 @@
+---
+script:
+  speech_processing:
+    mode: parallel
+    sequence:
+    - variables:
+        piper_voice: en_US-amy-low
+        # it_IT-paola-medium
+        # en_US-hfc_female-medium
+        piper_media_profile: en-GB-southern_english_female-low
+        ha_cloud_voice: JennyNeural
+        google_cloud_voice: it-IT-Standard-B
+        # LLMs use for voice the 'engine'
+        openai_35_llm_voice: google_cloud
+        openai_4o_llm_voice: google_cloud
+        mistral_llm_voice: google_cloud
+
+    - choose:
+
+      - conditions:
+        - condition: template
+          value_template: "{{ engine == 'piper' }}"
+        sequence:
+        - action: tts.speak
+          data:
+            cache:                   true
+            message:                 "{{ message }}"
+            media_player_entity_id:  "{{ player }}"
+            options:
+              voice:                 "{{ piper_voice }}"
+          target:
+            entity_id: tts.piper
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'piper_media' }}"
+        sequence:
+        - variables:
+            lang:                    "{{ piper_media_profile[:5] }}"
+            profile:                 "{{ piper_media_profile }}"
+        - action: media_player.play_media
+          target:
+            entity_id:               "{{ player }}"
+          data:
+            media_content_id: >-
+              media-source://tts/tts.piper?message="{{ message | urlencode }}"&language={{ lang }}&voice={{ profile }}
+            media_content_type: provider
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'cloud' }}"
+        sequence:
+        - action: tts.cloud_say
+          data:
+            cache:                   true
+            entity_id:               "{{ player }}"
+            message:                 "{{ message }}"
+            options: 
+              voice:                 "{{ ha_cloud_voice }}"
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'google' }}"
+        sequence:
+        - action: tts.google_translate_en_com
+          data:
+            media_player_entity_id:  "{{ player }}"
+            message:                 "{{ message }}"
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'google_cloud' }}"
+        sequence:
+        - action: tts.speak
+          target:
+            entity_id: tts.google_cloud
+          data:
+            cache:                   true
+            media_player_entity_id:  "{{ player }}"
+            message:                 "{{ message }}"
+            language:                "{{ google_cloud_voice[:5] }}"
+            options:
+              voice:                 "{{ google_cloud_voice }}"
+              encoding: linear16
+              speed: 1.1
+              profiles:
+                - medium-bluetooth-speaker-class-device
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'openai_35' }}"
+        sequence:
+        - action: conversation.process
+          data:
+            agent_id:                conversation.openai_35
+            text:                    "{{ message }}"
+          response_variable: agent
+        - action: script.speech_processing
+          data:
+            player:                  "{{ player }}"
+            engine:                  "{{ openai_35_llm_voice }}"
+            message:                 "{{ agent.response.speech.plain.speech }}"
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'openai_4o' }}"
+        sequence:
+        - action: conversation.process
+          data:
+            agent_id:                conversation.openai_4o
+            text:                    "{{ message }}"
+          response_variable: agent
+        - action: script.speech_processing
+          data:
+            player:                  "{{ player }}"
+            engine:                  "{{ openai_4o_llm_voice }}"
+            message:                 "{{ agent.response.speech.plain.speech }}"
+
+
+      - conditions:
+        - condition: template
+          value_template:            "{{ engine == 'mistral' }}"
+        sequence:
+        - action: conversation.process
+          data:
+            agent_id:                conversation.mistral
+            text:                    "{{ message }}"
+          response_variable: agent
+        - action: script.speech_processing
+          data:
+            player:                  "{{ player }}"
+            engine:                  "{{ mistral_llm_voice }}"
+            message:                 "{{ agent.response.speech.plain.speech }}"
+...

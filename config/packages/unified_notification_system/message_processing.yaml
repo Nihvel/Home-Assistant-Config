@@ -1,0 +1,42 @@
+---
+script:
+  message_processing:
+    mode: queued
+    sequence:
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ device == 'juri' }}"
+        sequence:
+        - action: notify.mobile_app_juri_pixel9
+          data:
+            title:   "{{ title }}"
+            message: "{{ message }}"
+
+
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ device == 'alice' }}"
+        sequence:
+        - action: notify.mobile_app_alice_iphone12
+          data:
+            title:   "{{ title }}"
+            message: "{{ message }}"
+
+
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ device == 'all' }}"
+        sequence:
+        - action: notify.mobile_app_juri_pixel9
+          data:
+            title:   "{{ title }}"
+            message: "{{ message }}"
+
+        - action: notify.mobile_app_alice_iphone12
+          data:
+            title:   "{{ title }}"
+            message: "{{ message }}"
+...

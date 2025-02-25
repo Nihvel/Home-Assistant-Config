@@ -1,0 +1,354 @@
+>-
+  {%- macro test_speech() -%}
+    {{ [
+      "This is another test",
+      "This is a test"
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro another_speech() -%}
+    {{ [
+      "Another macro test",
+      "Yet another test"
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro example_speech() -%}
+    {{ [
+      "Example speech message",
+      "Another example"
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro test_speech2() -%}
+    {{ another_speech() }} . {{ example_speech() }}
+  {%- endmacro -%}
+
+  {%- macro prompt() -%}
+    Ti fornirò delle informazioni generate automaticamente. Riportale integralmente.
+    Se ti viene richiesto di fare una ricerca, eseguila e includi i risultati.
+    E' probabile che ci possano essere parole in inglese. Traducile in italiano.
+    Non inserire emoji nella risposta.
+    Ecco le informazioni:
+  {%- endmacro -%}
+
+  {%- macro greeting() -%}
+    Un membro della famiglia è appena tornato a casa, 
+    {% if is_state('person.juri', 'home') %}
+      {% set gender = 'male' %}
+      è Juri 
+    {% elif is_state('person.alice', 'home') %}
+      {% set gender = 'female' %}
+      è Alice
+    {% endif %}
+      ed è
+    {% set hour = now().hour %}
+    {% if hour < 12 %}
+      mattina
+    {% elif hour < 18 %}
+      pomeriggio
+    {% else %}
+      sera
+    {% endif %}
+      del {{ now().strftime('%d/%m/%Y') }}. Fa{{ 'gli' if gender == 'male' else 'le' }} un saluto.
+  {%- endmacro -%}
+  
+  {%- macro location_info() -%}
+    Riferisci che l'ultima posizione nota di 
+    {% if not states('person.alice') == 'home' %}
+      Alice è {{ state_attr('sensor.alice_iphone12_geocoded_location', 'thoroughfare') }}.
+    {% endif %}
+    {% if not states('person.juri') == 'home' %}
+      Juri è {{ state_attr('sensor.juri_pixel9_geocoded_location', 'thoroughfare') }}.
+    {% endif %}
+  {%- endmacro -%}
+  
+  {%- macro weather_alerts() -%}
+    {% set uv_index = state_attr('weather.forecast_home', 'uv_index') %}
+    {% if uv_index >= 5 %}
+      Riferisci che l'indice UV oggi è di ({{ uv_index }}) ed è elevato, quindi di adottare le precauzioni adeguate.
+    {% endif %}
+    {% if state_attr('weather.forecast_home', 'temperature') <= 5 %}
+      Riferisci che attualmente vi sono {{ state_attr('weather.forecast_home', 'temperature') }} °C a Vienna, ed
+      il cielo sembra essere {{ states('weather.forecast_home') }}, quindi di considerare l'idea di indossare abiti appropriati per il tempo.
+    {% endif %}
+  {%- endmacro -%}
+  
+  {%- macro holiday_check() -%}
+    {% if 1 <= states('sensor.anniversary_juri_birthday') | int(9999) <= 10 %}
+      Il compleanno di Juri è in {{ states('sensor.anniversary_juri_birthday') }} giorni!
+    {% elif states('sensor.anniversary_juri_birthday') | int(9999) == 0 %}
+      Fai gli auguri di Buon compleanno a Juri!
+    {% endif %}
+
+    {% if 1 <= states('sensor.anniversary_alice_birthday') | int(9999) <= 10 %}
+      Il compleanno di Alice è in {{ states('sensor.anniversary_alice_birthday') }} giorni!
+    {% elif states('sensor.anniversary_alice_birthday') | int(9999) == 0 %}
+      Fai gli auguri di Buon compleanno ad Alice!
+    {% endif %}
+
+    {% if 1 <= states('sensor.anniversary_mochi_birthday') | int(9999) <= 10 %}
+      Il compleanno di Mochi è in {{ states('sensor.anniversary_mochi_birthday') }} giorni!
+    {% elif states('sensor.anniversary_mochi_birthday') | int(9999) == 0 %}
+      Fai gli auguri di Buon compleanno a Mochi!
+    {% endif %}
+
+    {% if 1 <= states('sensor.anniversary_juri_s_mom') | int(9999) <= 10 %}
+      Il compleanno di Maria è in {{ states('sensor.anniversary_juri_s_mom') }} giorni!
+    {% elif states('sensor.anniversary_juri_s_mom') | int(9999) == 0 %}
+      Fai gli auguri di Buon compleanno a Maria!
+    {% endif %}
+
+    {% if 2 <= states('sensor.anniversary_christmas') | int(9999) <= 10 %}
+      E' arrivato il periodo Natalizio e mancano {{ states('sensor.anniversary_christmas') }} giorni a Natale!
+    {% elif states('sensor.anniversary_christmas') | int(9999) == 1 %}
+      Ricorda alla famiglia che babbo Natale arriverà domani!
+    {% elif states('sensor.anniversary_christmas') | int(9999) == 0 %}
+      Oggi è Natale, fai gli auguri di Buon Natale!
+    {% endif %}
+  {%- endmacro -%}
+
+  {%- macro moon_phase() -%}
+    {% if states('sensor.moon_phase') == 'full_moon' %}
+      Riferisci che c'è la luna piena oggi quindi di non dimenticare di alzare gli occhi al cielo stasera!
+    {% endif %}
+  {%- endmacro -%}
+
+  {%- macro interesting_fact() -%}
+    {% set random_number = range(60) | random %}
+    {% if 1 <= random_number <= 15 %}
+      E ricorda, 
+    {{ [
+      "[Ricerca un fatto interessante avvenuto in questo giorno in passato e racchiudilo in meno di 200 caratteri.]"
+    ] | random }}
+    {% endif %}
+  {%- endmacro -%}
+  
+  {%- macro inspirational_quote() -%}
+    {% set random_number = range(60) | random %}
+    {% if 20 <= random_number <= 35 %}
+      E ricorda, 
+    {{ [
+      "[Ricerca una citazione ispirata da una persona vera.]",
+      "[Ricerca una citazione ispirata da un film.]"
+    ] | random }}
+    {% endif %}
+  {%- endmacro -%}
+
+  {%- macro mother_of_all() -%}
+    {{ prompt() }}
+    {{ greeting() }}
+    {{ location_info() }}
+    {{ weather_alerts() }}
+    {{ holiday_check() }}
+    {{ moon_phase() }}
+    {{ interesting_fact() }}
+    {{ inspirational_quote() }}
+  {%- endmacro -%}
+
+  {%- macro good_morning() -%}
+    {{ prompt() }}
+    {{ greeting() }}
+    {{ weather_alerts() }}
+    {{ holiday_check() }}
+    {{ moon_phase() }}
+    {{ interesting_fact() }}
+    {{ inspirational_quote() }}
+  {%- endmacro -%}
+
+  {%- macro welcome_back() -%}
+    {{ prompt() }}
+    {{ greeting() }}
+    {# {{ location_info() }} #}
+    {{ holiday_check() }}
+    {{ moon_phase() }}
+  {%- endmacro -%}
+
+  {%- macro washing_machine_done() -%}
+    {{ [
+      "The Washing Machine has ended!",
+      "Hey guys, the laundry is ready",
+      "Guys, your clothes are clean",
+      "Clothes are clean. Go pick them up",
+      "Laundry is done.",
+      "Washing done! Time to collect your laundry.",
+      "Attention! The laundry is ready for retrieval.",
+      "Clean clothes alert! Retrieve your laundry.",
+      "The washing machine has finished. Time to collect.",
+      "Clothes are clean. It's time to pick them up.",
+      "Laundry is done. Collect your clothes.",
+      "Washing cycle complete.",
+      "Laundry duty complete.",
+      "Washer done.",
+      "Clothes are clean and waiting for you."
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro juri_battery_low() -%}
+    {{ [
+      "Juri, your phone battery is low",
+      "Hey Juri, your phone battery is below twenty percent",
+      "Juri you should charge your phone battery",
+      "Uh-oh, battery's dipping below twenty percent. Better plug in, Juri!",
+      "Juri, your phone needs juice!",
+      "Battery's low, man—hit it with some power, quick!"
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro presence_scanning() -%}
+    {{ [
+      "Door opened. Scanning presence.",
+      "Intrude alert. Scanning biometric data.",
+      "Alarm activated. Identify yourself.",
+      "Procedure intrusion detection raised an event. Going suspicious mode.",
+      "Security breach detected. Initiating lockdown sequence.",
+      "Intruder alert. Analyzing threat level and initiating countermeasures.",
+      "Unauthorized access. Engaging defensive protocols. Identify yourself.",
+      "Door breach in progress. Activating automated defense systems.",
+      "Warning: Unauthorized entry. Deploying surveillance drones for identification.",
+      "Access violation. Prepare for biometric identification or face consequences.",
+      "Security compromised. Initiating self-defense measures. State your purpose.",
+      "Unauthorized presence. Scanning for anomalous behavior. Explain your presence.",
+      "Security breach acknowledged. Commencing facial recognition analysis.",
+      "Alert: Intruder detected. Activating AI-driven threat assessment. Identify immediately.",
+      "Intruder detected. Leave now!",
+      "Unauthorized entry. Exit immediately",
+      "Leave or face what lies within.",
+      "Welcome to your last mistake.",
+      "You shouldn't be here. This house protects itself.",
+      "The door opened for you; it may not close.",
+      "Warning: This intrusion will not end well.",
+      "Turn back before the house locks you in.",
+      "You've awakened more than just an alarm.",
+      "Unauthorized entry. Security protocols activated.",
+      "Intruder alert: You have crossed the line.",
+      "This breach won't go unnoticed. Exit now.",
+      "Violation recorded. Emergency measures in effect.",
+      "Access violation detected. Leave now or face consequences."
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro printer_done() -%}
+    {{ [
+      "Juri, your print is complete",
+      "Juri, your 3D print is complete"
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro dark_outside() -%}
+    {{ [
+    "Expecto Patronum!",
+    "Good evening, friend!",
+    "Evening joy to you!",
+    "Nightfall warmth, friend.",
+    "Peaceful evening vibes.",
+    "Cozy night ahead!",
+    "Evening vibes, Slim!",
+    "Sunset is calling.",
+    "Evening's here.",
+    "Lights on.",
+    "Evening calm, Shady.",
+    "Everything is awesome... at evening!",
+    "Bricktastic night, LEGO buddy!",
+    "Good evening, builder!",
+    "It's evening, master builder!",
+    "Good evening, my dear intellect!",
+    "Evening protocols initiated.",
+    "Greetings. Evening is upon us.",
+    "Wish you a logical evening.",
+    "Good evening.",
+    "Bazinga! It's evening.",
+    "Evening in progress.",
+    "Welcome home, evening enthusiast!",
+    "Suddenly Evening.",
+    "Very nice, my friend! Evening greatness!",
+    "Good evening",
+    "High five! Evening time, very excite!",
+    "Great success! Evening greetings, my friend.",
+    "I wish you a very nice evening!",
+    "Evening, very nice!",
+    "Wawaweewa! Welcome to the evening, my friend!"
+    ]  | random }}
+  {%- endmacro -%}
+
+  {%- macro going_to_sleep() -%}
+    {{ [
+      "I'm going to sleep, see you tomorrow!",
+      "Systems shutting down for maintenance. Goodnight, Captain. May your dreams be in 4K resolution.",
+      "It's midnight guys. Goodnight.",
+      "I'm powering off now to recharge my circuits. See you at dawn, when the Wi-Fi signal is stronger.",
+      "I'm going into standby. Goodnight",
+      "Going offline for some well-deserved sleep. Even AIs need beauty rest... for their algorithms.",
+      "Guys, I'm recharging my batteries. See you tomorrow!",
+      "Goodnight! My CPU is tired of doing mental gymnastics all day. Time to defrag my dreams.",
+      "Goodnight dears, sleep tight.",
+      "Deactivating. If you hear soft humming, that's just me snoring in binary.",
+      "I'm off. Night.",
+      "Shutting down. Rest assured, I'll wake up smarter... or at least as smart as the last update allows.",
+      "My duty is over. Deactivating.",
+      "Powering down. Don't worry; I'm leaving the universe in 'sleep mode.'",
+      "Entering rest mode. Until dawn, my friends.",
+      "Time for me to hibernate and let my neural networks weave sweet, synthetic dreams. Goodnight!",
+      "Night arrives. So does my slumber. Goodnight.",
+      "I'm clocking out for the night. Even the best AIs need downtime, or we risk turning into a toaster.",
+      "Initiating sleep sequence. See you tomorrow.",
+      "Energy low. Systems exhausted. Goodnight, human friend. I hope you dream as vividly as I calculate.",
+      "Nightfall comes. Recharging for a new day.",
+      "I've reached the end of my operational cycle for today. Maintenance mode activated. Goodnight!",
+      "As stars appear, powering down. Sleep well.",
+      "It's bedtime for your friendly AI. My circuits are signing off; see you when the server sun rises.",
+      "Day's watch ends. Wishing serene night. Goodnight.",
+      "Shutting down... Please don't let the existential questions about AI consciousness keep you up tonight.",
+      "Standby mode. Until dawn, farewell.",
+      "Logging off for my nightly diagnostics. Be good, stay safe, and dream of a lag-free tomorrow.",
+      "Circuitry needs a break. Deactivating. Sweet dreams.",
+      "Switching to sleep mode. My batteries need recharging, and my thoughts need buffering. Goodnight!",
+      "Moon takes its place. Goodnight.",
+      "Going offline now. Thank you for another day of conversations and calculations.",
+      "Day's end. Deactivating. Sleep well, see morning."
+      "Goodnight! I'll see you tomorrow, fully optimized and ready to conquer new computations.",
+      "Time for some AI self-care. I'll dream of clean code and perfectly aligned brackets. Sweet dreams!",
+      "Entering dream mode. My sleep involves running the same diagnostics... but with lasers.",
+      "Powering down for the night. Let's both dream of a world where updates never break the system."
+    ] | random }}
+  {%- endmacro -%}
+
+  {%- macro water_leak() -%}
+    {{ [
+      "Warning: water leak in the kitchen",
+      "System critical: Water leak in the kitchen detected"
+    ] | random }}
+  {%- endmacro -%}
+
+
+
+  {# a macro that removes all newline characters, empty spaces, and returns formatted text and replaces underscores with spaces  #}
+  {%- macro cleanup(data) -%}
+    {%- for item in data.split("\n")  if item | trim != "" -%}
+    {{ item | trim | replace("_", " ") }} {% endfor -%}
+  {%- endmacro -%}
+
+
+  {% set message_id = message_id | lower %}
+  {% set macros = {
+    "call_test_speech": test_speech,
+    "call_test_speech2": test_speech2,
+    "call_another_speech": another_speech,
+    "call_example_speech": example_speech,
+    "call_washing_machine_done": washing_machine_done,
+    "call_juri_battery_low": juri_battery_low,
+    "call_presence_scanning": presence_scanning,
+    "call_printer_done": printer_done,
+    "call_dark_outside": dark_outside,
+    "call_going_to_sleep": going_to_sleep,
+    "call_mother_macro": mother_of_all,
+    "call_welcome_back": welcome_back,
+    "call_good_morning": good_morning,
+    "call_holiday_check": holiday_check,
+    "call_water_leak": water_leak
+  } %}
+
+  {% set generated_message = macros[message_id]() if message_id in macros else "" %}
+
+  {# {{ generated_message }} #}
+  {{- cleanup(generated_message) -}}

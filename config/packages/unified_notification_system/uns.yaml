@@ -1,0 +1,61 @@
+---
+#- action: script.uns
+#  data:
+#    kind: voice | text           [!]
+#    message_id: {macro_name}     [!]
+#    forced: true | false         [opt][kind=voice]
+#    engine: {engine}             [opt][kind=voice]
+#    player: {player_name}        [opt][kind=voice]
+#    volume: {volume}             [opt][kind=voice]
+#    device: {device} | all       [opt][kind=text]
+
+script:
+  uns:
+    mode: queued
+    sequence:
+    - variables:
+        volume:         !include volumes.j2
+        player:         !include players.j2
+        text_message:   !include messages.j2
+        voice_message:  !include speeches.j2
+        kind:           "{{ kind   | d('') | lower }}"
+        engine:         "{{ engine | d('piper') | lower }}"
+        device:         "{{ device | d('all') | lower }}"
+        message_id:     "{{ message_id | d('') | lower }}"
+        forced:         "{{ forced | d(False) | bool }}"
+        message: >-
+          {% if message_id | length > 0%}
+            {% if kind == 'text' %}
+              {{ text_message }}
+            {% elif kind == 'voice' %}
+              {{ voice_message }}
+            {% else %}
+              Kind must be 'text' or 'voice'
+            {% endif %}
+          {% else %}
+            {{ message }}
+          {% endif %}
+          
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ kind == 'text' }}"
+        sequence:
+        - action: script.message_engine
+          data:
+            device:   "{{ device }}"
+            message:  "{{ message }}"
+
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ kind == 'voice'}}"
+        sequence:
+        - action: script.speech_engine
+          data:
+            player:   "{{ player }}"
+            volume:   "{{ volume }}"
+            engine:   "{{ engine }}"
+            message:  "{{ message }}"
+            forced:   "{{ forced }}"
+...
