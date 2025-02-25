@@ -116,9 +116,9 @@ If the speaker is currently playing something it will pause the media, announce 
 - action: script.uns
   data:
     kind: voice
-	message_id: call_water_leak
-	forced: true
-	player: all
+      message_id: call_water_leak
+      forced: true
+      player: all
 ```
 
 This will send a **preconfigured emergency voice message** using the default engine on all the players. The `forced: true` will play no matter the time of the day or **quiet_mode** (speech_engine: false)
@@ -130,8 +130,8 @@ This will send a **preconfigured emergency voice message** using the default eng
 - action: script.uns
   data:
     kind: voice
-	message: Tell me a joke
-	engine: openai_35
+      message: Tell me a joke
+      engine: openai_35
 ```
 
 In this example, we're using an LLM (Large Language Model) as the engine for generating the message. The engine parameter here is set to openai_35, which refers to the name of the OpenAI model you setup using the OpenAI integration.
@@ -163,12 +163,15 @@ If you have any questions or need further assistance, feel free to open an issue
 ---
 
 ### **License**
+
 This project is licensed under the MIT License.
 
 ---
 
 ### **Author**
 
-The initial version of this project (in 2018) was created only for myself @Nihvel after reading @CCOSTAN's config https://github.com/CCOSTAN/Home-AssistantConfig .
-I decided to share it with the community because it may help YOU to build your own personal Voice Pipeline for Home Assistant!
+The initial version of this project, back in 2018, was created only for myself @Nihvel when I started to get coinfident with Home Assistant and I started reading how other people were configuring their own HA, in particular, [@CCOSTAN's HA config](https://github.com/CCOSTAN/Home-AssistantConfig).
+
+Today I decided to share it with the community because it may help YOU to build your own personal Voice Pipeline for Home Assistant!
+
 ---
