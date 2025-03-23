@@ -89,7 +89,7 @@ script:
                 data:
                   media_content_id: "media-source://media_source/local/{{ chime_tone }}"
                   media_content_type: audio/mpeg
-                  announce: false
+                  enqueue: play
                 target:
                   entity_id: "{{ player }}"
 
@@ -101,6 +101,10 @@ script:
 
               - delay:
                   seconds: 3
+
+              - action: media_player.clear_playlist
+                target:
+                  entity_id: "{{ player }}"
 
     - action: media_player.volume_set
       target:
